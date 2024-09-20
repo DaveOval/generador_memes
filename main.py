@@ -9,7 +9,14 @@ from PIL import Image, ImageFont, ImageDraw # Esta librería nos va a permitir m
 
 from io import BytesIO # Ayudar a decodificar información importante
 
+#Creamos una funcion que se encarga de cambiarle el color al texto dependiendo la imagen
+def cambiar_color_con_fondo(color):
+    luminancia = color[0] * 0.299 + color[1] * 0.587 + color[2] * 0.114
 
+    if luminancia > 128:
+        return 'black'
+    else:
+        return 'white'
 
 # Esta variable va a contener la respuesta de la plataforma de memes (API)
 resultado = requests.get('https://api.imgflip.com/get_memes')
@@ -34,8 +41,6 @@ url_imagen = lista_memes[numero_aleatorio]['url']
 # Vamos a descargar esa imagen de internet
 # Primero tenemos que solicitar la información de esa imagen
 imagen_info = requests.get(url_imagen)
-
-
 
 # Aquí imprimos toda la información que se obtiene de mi imagen
 # print(imagen_info.text)
@@ -85,9 +90,17 @@ while largo_texto < largo_imagen and alto_texto < alto_imagen:
 
     largo_texto, alto_texto = lienzo.textbbox((0, 0), texto_imagen, font=fuente)[2:]
 
+tamanio_fuente -= 25
+
+fuente = ImageFont.truetype("arial.ttf", tamanio_fuente)
+
+color_promedio_imagen = imagen_obtenida.convert('RGB').resize((1,1)).getpixel((0,0))
+
+color_texto = cambiar_color_con_fondo(color_promedio_imagen)
+
 posicion_text = ((largo_imagen - largo_texto) // 2, (alto_imagen - alto_texto))
 
-lienzo.text(posicion_text , texto_imagen, font=fuente, fill="Black")
+lienzo.text(posicion_text , texto_imagen, font=fuente, fill=color_texto)
 
 # Mostramos la imagen al usuario
 imagen_obtenida.show()
